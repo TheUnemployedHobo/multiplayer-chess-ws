@@ -1,0 +1,43 @@
+{
+  "name": "multiplayer-chess-ws",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "build": "tsc --build",
+    "start": "tsx watch ./src/index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19",
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-error-toolkit": "^1.2.1",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^25.9.3",
+    "eslint": "^10.5.0",
+    "eslint-plugin-perfectionist": "^5.9.0",
+    "prisma": "6.19",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0"
+  }
+}

@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/database"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  username        String   @unique
+  password        String
+  avatar          String
+  signup_date     DateTime @default(now())
+  stats           Stats?
+  friendsSent     Friend[] @relation("UserFriends")
+  friendsReceived Friend[] @relation("FriendUsers")
+  matchesPlayed   Match[]  @relation("PlayerMatches")
+  matchesAgainst  Match[]  @relation("OpponentMatches")
+}
+
+type Stats {
+  games  Int
+  wins   Int
+  losses Int
+  elo    Int
+}
+
+model Friend {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  friendId String @db.ObjectId
+  user     User   @relation("UserFriends", fields: [userId], references: [id])
+  friend   User   @relation("FriendUsers", fields: [friendId], references: [id])
+}
+
+model Match {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  opponentId String   @db.ObjectId
+  result     String
+  playedAt   DateTime @default(now())
+  user       User     @relation("PlayerMatches", fields: [userId], references: [id])
+  opponent   User     @relation("OpponentMatches", fields: [opponentId], references: [id])
+}
