@@ -178,7 +178,7 @@ export type UserWhereInput = {
   password?: Prisma.StringFilter<"User"> | string
   avatar?: Prisma.StringFilter<"User"> | string
   signup_date?: Prisma.DateTimeFilter<"User"> | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCompositeFilter, Prisma.StatsObjectEqualityInput> | null
+  stats?: Prisma.XOR<Prisma.StatsCompositeFilter, Prisma.StatsObjectEqualityInput>
   friendsSent?: Prisma.FriendListRelationFilter
   friendsReceived?: Prisma.FriendListRelationFilter
   matchesPlayed?: Prisma.MatchListRelationFilter
@@ -208,7 +208,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
     password?: Prisma.StringFilter<"User"> | string
     avatar?: Prisma.StringFilter<"User"> | string
     signup_date?: Prisma.DateTimeFilter<"User"> | Date | string
-    stats?: Prisma.XOR<Prisma.StatsNullableCompositeFilter, Prisma.StatsObjectEqualityInput> | null
+    stats?: Prisma.XOR<Prisma.StatsCompositeFilter, Prisma.StatsObjectEqualityInput>
     friendsSent?: Prisma.FriendListRelationFilter
     friendsReceived?: Prisma.FriendListRelationFilter
     matchesPlayed?: Prisma.MatchListRelationFilter
@@ -245,7 +245,7 @@ export type UserCreateInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchCreateNestedManyWithoutUserInput
@@ -258,7 +258,7 @@ export type UserUncheckedCreateInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendUncheckedCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchUncheckedCreateNestedManyWithoutUserInput
@@ -270,7 +270,7 @@ export type UserUpdateInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUpdateManyWithoutUserNestedInput
@@ -282,7 +282,7 @@ export type UserUncheckedUpdateInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUncheckedUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUncheckedUpdateManyWithoutUserNestedInput
@@ -295,7 +295,7 @@ export type UserCreateManyInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
 }
 
 export type UserUpdateManyMutationInput = {
@@ -303,7 +303,7 @@ export type UserUpdateManyMutationInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -311,7 +311,7 @@ export type UserUncheckedUpdateManyInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
 }
 
 export type StatsObjectEqualityInput = {
@@ -448,7 +448,7 @@ export type UserCreateWithoutFriendsSentInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsReceived?: Prisma.FriendCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchCreateNestedManyWithoutUserInput
   matchesAgainst?: Prisma.MatchCreateNestedManyWithoutOpponentInput
@@ -460,7 +460,7 @@ export type UserUncheckedCreateWithoutFriendsSentInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsReceived?: Prisma.FriendUncheckedCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchUncheckedCreateNestedManyWithoutUserInput
   matchesAgainst?: Prisma.MatchUncheckedCreateNestedManyWithoutOpponentInput
@@ -477,7 +477,7 @@ export type UserCreateWithoutFriendsReceivedInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendCreateNestedManyWithoutUserInput
   matchesPlayed?: Prisma.MatchCreateNestedManyWithoutUserInput
   matchesAgainst?: Prisma.MatchCreateNestedManyWithoutOpponentInput
@@ -489,7 +489,7 @@ export type UserUncheckedCreateWithoutFriendsReceivedInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedCreateNestedManyWithoutUserInput
   matchesPlayed?: Prisma.MatchUncheckedCreateNestedManyWithoutUserInput
   matchesAgainst?: Prisma.MatchUncheckedCreateNestedManyWithoutOpponentInput
@@ -519,7 +519,7 @@ export type UserUpdateWithoutFriendsSentInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsReceived?: Prisma.FriendUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUpdateManyWithoutUserNestedInput
   matchesAgainst?: Prisma.MatchUpdateManyWithoutOpponentNestedInput
@@ -530,7 +530,7 @@ export type UserUncheckedUpdateWithoutFriendsSentInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsReceived?: Prisma.FriendUncheckedUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUncheckedUpdateManyWithoutUserNestedInput
   matchesAgainst?: Prisma.MatchUncheckedUpdateManyWithoutOpponentNestedInput
@@ -558,7 +558,7 @@ export type UserUpdateWithoutFriendsReceivedInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUpdateManyWithoutUserNestedInput
   matchesPlayed?: Prisma.MatchUpdateManyWithoutUserNestedInput
   matchesAgainst?: Prisma.MatchUpdateManyWithoutOpponentNestedInput
@@ -569,7 +569,7 @@ export type UserUncheckedUpdateWithoutFriendsReceivedInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedUpdateManyWithoutUserNestedInput
   matchesPlayed?: Prisma.MatchUncheckedUpdateManyWithoutUserNestedInput
   matchesAgainst?: Prisma.MatchUncheckedUpdateManyWithoutOpponentNestedInput
@@ -581,7 +581,7 @@ export type UserCreateWithoutMatchesPlayedInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendCreateNestedManyWithoutFriendInput
   matchesAgainst?: Prisma.MatchCreateNestedManyWithoutOpponentInput
@@ -593,7 +593,7 @@ export type UserUncheckedCreateWithoutMatchesPlayedInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendUncheckedCreateNestedManyWithoutFriendInput
   matchesAgainst?: Prisma.MatchUncheckedCreateNestedManyWithoutOpponentInput
@@ -610,7 +610,7 @@ export type UserCreateWithoutMatchesAgainstInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchCreateNestedManyWithoutUserInput
@@ -622,7 +622,7 @@ export type UserUncheckedCreateWithoutMatchesAgainstInput = {
   password: string
   avatar: string
   signup_date?: Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableCreateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats: Prisma.XOR<Prisma.StatsCreateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedCreateNestedManyWithoutUserInput
   friendsReceived?: Prisma.FriendUncheckedCreateNestedManyWithoutFriendInput
   matchesPlayed?: Prisma.MatchUncheckedCreateNestedManyWithoutUserInput
@@ -649,7 +649,7 @@ export type UserUpdateWithoutMatchesPlayedInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUpdateManyWithoutFriendNestedInput
   matchesAgainst?: Prisma.MatchUpdateManyWithoutOpponentNestedInput
@@ -660,7 +660,7 @@ export type UserUncheckedUpdateWithoutMatchesPlayedInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUncheckedUpdateManyWithoutFriendNestedInput
   matchesAgainst?: Prisma.MatchUncheckedUpdateManyWithoutOpponentNestedInput
@@ -682,7 +682,7 @@ export type UserUpdateWithoutMatchesAgainstInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUpdateManyWithoutUserNestedInput
@@ -693,7 +693,7 @@ export type UserUncheckedUpdateWithoutMatchesAgainstInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   avatar?: Prisma.StringFieldUpdateOperationsInput | string
   signup_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stats?: Prisma.XOR<Prisma.StatsNullableUpdateEnvelopeInput, Prisma.StatsCreateInput> | null
+  stats?: Prisma.XOR<Prisma.StatsUpdateEnvelopeInput, Prisma.StatsCreateInput>
   friendsSent?: Prisma.FriendUncheckedUpdateManyWithoutUserNestedInput
   friendsReceived?: Prisma.FriendUncheckedUpdateManyWithoutFriendNestedInput
   matchesPlayed?: Prisma.MatchUncheckedUpdateManyWithoutUserNestedInput
@@ -827,7 +827,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
       ExtArgs["result"]["user"]
     >
     composites: {
-      stats: Prisma.$StatsPayload | null
+      stats: Prisma.$StatsPayload
     }
   }
 
