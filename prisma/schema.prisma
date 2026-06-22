@@ -14,7 +14,7 @@ model User {
   password        String
   avatar          String
   signup_date     DateTime @default(now())
-  stats           Stats?
+  stats           Stats
   friendsSent     Friend[] @relation("UserFriends")
   friendsReceived Friend[] @relation("FriendUsers")
   matchesPlayed   Match[]  @relation("PlayerMatches")
