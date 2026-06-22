@@ -4,6 +4,7 @@ import { globalErrorHandler, notFoundHandler } from "express-error-toolkit"
 import { createServer } from "node:http"
 
 import middlewares from "./middlewares"
+import friendsRoute from "./routes/friends-route"
 import matchesRoute from "./routes/matches-route"
 import usersRoute from "./routes/users-route"
 
@@ -13,6 +14,7 @@ const server = createServer(app)
 app.use(middlewares)
 app.use("/users", usersRoute)
 app.use("/matches", matchesRoute)
+app.use("/friends", friendsRoute)
 app.use(notFoundHandler)
 app.use(globalErrorHandler)
 
