@@ -17,11 +17,10 @@ import type * as Prisma from "../internal/prismaNamespace"
  */
 export type StatsModel = runtime.Types.Result.DefaultSelection<Prisma.$StatsPayload>
 
-export type StatsNullableCompositeFilter = {
-  equals?: Prisma.StatsObjectEqualityInput | null
-  is?: Prisma.StatsWhereInput | null
-  isNot?: Prisma.StatsWhereInput | null
-  isSet?: boolean
+export type StatsCompositeFilter = {
+  equals?: Prisma.StatsObjectEqualityInput
+  is?: Prisma.StatsWhereInput
+  isNot?: Prisma.StatsWhereInput
 }
 
 export type StatsOrderByInput = {
@@ -31,14 +30,13 @@ export type StatsOrderByInput = {
   elo?: Prisma.SortOrder
 }
 
-export type StatsNullableCreateEnvelopeInput = {
-  set?: Prisma.StatsCreateInput | null
+export type StatsCreateEnvelopeInput = {
+  set?: Prisma.StatsCreateInput
 }
 
-export type StatsNullableUpdateEnvelopeInput = {
-  set?: Prisma.StatsCreateInput | null
-  upsert?: Prisma.StatsUpsertInput
-  unset?: boolean
+export type StatsUpdateEnvelopeInput = {
+  set?: Prisma.StatsCreateInput
+  update?: Prisma.StatsUpdateInput
 }
 
 export type StatsWhereInput = {
@@ -49,11 +47,6 @@ export type StatsWhereInput = {
   wins?: Prisma.IntFilter<"Stats"> | number
   losses?: Prisma.IntFilter<"Stats"> | number
   elo?: Prisma.IntFilter<"Stats"> | number
-}
-
-export type StatsUpsertInput = {
-  set: Prisma.StatsCreateInput | null
-  update: Prisma.StatsUpdateInput
 }
 
 export type StatsUpdateInput = {
