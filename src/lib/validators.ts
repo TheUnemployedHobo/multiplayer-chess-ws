@@ -39,16 +39,3 @@ export const userUpdateVals = [
     .withMessage("Password must be at least 3 characters"),
   body("avatar").optional({ values: "falsy" }).isLength({ max: 8, min: 8 }).withMessage("Avatar must be 8 characters"),
 ]
-
-export const matchInsertVals = [
-  body("opponentId")
-    .notEmpty()
-    .withMessage("Opponent ID is required")
-    .matches(/^[0-9a-fA-F]{24}$/)
-    .withMessage("Invalid opponent ID format"),
-  body("result")
-    .notEmpty()
-    .withMessage("Result must be a string")
-    .isIn(["win", "loss", "draw"])
-    .withMessage("Result must be win, loss, or draw"),
-]
