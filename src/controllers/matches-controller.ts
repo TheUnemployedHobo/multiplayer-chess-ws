@@ -2,7 +2,7 @@ import type { RequestHandler } from "express"
 
 import db from "prisma/db"
 
-import { calculateNewElo } from "@/lib/utils"
+// import { calculateNewElo } from "@/lib/utils"
 
 export const matchGet: RequestHandler = async (req, res) => {
   const { userId } = req.body
@@ -22,26 +22,27 @@ export const matchGet: RequestHandler = async (req, res) => {
   res.json(foundMatches)
 }
 
-//? This is not practical. Should be moved to a independent function.
-export const matchInsert: RequestHandler = async (req, res) => {
-  const { opponentId, result, userId } = req.body
+//? This is not practical. It should be moved to an independent function.
 
-  const match = await db.match.create({
-    data: { opponentId, result, userId },
-    select: {
-      opponent: { select: { stats: true } },
-      user: { select: { stats: true } },
-    },
-  })
+// export const matchInsert: RequestHandler = async (req, res) => {
+//   const { opponentId, result, userId } = req.body
 
-  const newStats = {
-    elo: calculateNewElo(match.user.stats.elo, match.opponent.stats.elo, result),
-    games: match.user.stats.games + 1,
-    losses: match.user.stats.losses + Number(result === "loss"),
-    wins: match.user.stats.wins + Number(result === "win"),
-  }
+//   const match = await db.match.create({
+//     data: { opponentId, result, userId },
+//     select: {
+//       opponent: { select: { stats: true } },
+//       user: { select: { stats: true } },
+//     },
+//   })
 
-  await db.user.update({ data: { stats: newStats }, where: { id: userId } })
+//   const newStats = {
+//     elo: calculateNewElo(match.user.stats.elo, match.opponent.stats.elo, result),
+//     games: match.user.stats.games + 1,
+//     losses: match.user.stats.losses + Number(result === "loss"),
+//     wins: match.user.stats.wins + Number(result === "win"),
+//   }
 
-  res.sendStatus(201)
-}
+//   await db.user.update({ data: { stats: newStats }, where: { id: userId } })
+
+//   res.sendStatus(201)
+// }
