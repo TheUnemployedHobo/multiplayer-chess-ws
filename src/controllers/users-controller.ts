@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express"
 
 import { compare, genSalt, hash } from "bcrypt"
-import { NotFoundError, UnauthenticatedError } from "express-error-toolkit"
+import { ConflictError, NotFoundError, UnauthenticatedError } from "express-error-toolkit"
 import db from "prisma/db"
 
 import { jwtHelper } from "@/lib/utils"
@@ -19,14 +19,21 @@ export const userLogIn: RequestHandler = async (req, res) => {
 }
 
 export const userRegister: RequestHandler = async (req, res) => {
-  const { avatar, password, username } = req.body
+  const { avatar, elo, password, username } = req.body
 
   const salt = await genSalt(8)
   const hashedPassword = await hash(password, salt)
 
-  const stats = { elo: 300, games: 0, losses: 0, wins: 0 }
+  const foundUser = await db.user.findUnique({ where: { username } })
+  if (foundUser) throw new ConflictError("User with this username already exists")
+
   await db.user.create({
-    data: { avatar, password: hashedPassword, stats, username },
+    data: {
+      avatar,
+      password: hashedPassword,
+      stats: { elo, games: 0, losses: 0, wins: 0 },
+      username,
+    },
   })
 
   res.sendStatus(201)
