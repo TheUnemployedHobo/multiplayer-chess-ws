@@ -23,6 +23,7 @@ export const userSignupVals = [
     .withMessage("Avatar is required")
     .isLength({ max: 8, min: 8 })
     .withMessage("Avatar must be 8 characters"),
+  body("elo").notEmpty().withMessage("Elo is required").isNumeric().withMessage("Elo must be a number"),
 ]
 
 export const userUpdateVals = [
