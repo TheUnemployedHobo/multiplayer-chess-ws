@@ -82,8 +82,11 @@ export const userDelete: RequestHandler = async (req, res) => {
 export const userGet: RequestHandler = async (req, res) => {
   const { userId } = req.body
 
-  const foundUser = await db.user.findUnique({ where: { id: userId } })
+  const foundUser = await db.user.findUnique({
+    select: { avatar: true, signup_date: true, stats: true, username: true },
+    where: { id: userId },
+  })
   if (!foundUser) throw new NotFoundError("User not found")
 
-  res.sendStatus(200)
+  res.json(foundUser)
 }
