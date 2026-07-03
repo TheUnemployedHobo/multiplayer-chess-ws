@@ -6,6 +6,6 @@ import { validateJwt } from "@/middlewares/custom"
 
 const route = Router()
 
-route.get("/", validateJwt, asyncHandler(friendGet))
+route.get("/", asyncHandler(validateJwt), asyncHandler(friendGet))
 
 export default route
