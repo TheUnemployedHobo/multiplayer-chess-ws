@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express"
 
+import { UnauthenticatedError } from "express-error-toolkit"
 import { type ValidationChain, validationResult } from "express-validator"
 
 import { jwtHelper } from "@/lib/utils"
@@ -14,18 +15,13 @@ export const validateReq = (validators: ValidationChain[]): RequestHandler[] => 
   },
 ]
 
-export const validateJwt: RequestHandler = (req, res, next) => {
-  try {
-    const authToken = req.headers.authorization
-    if (!authToken) return res.sendStatus(401)
+export const validateJwt: RequestHandler = (req, _, next) => {
+  const authToken = req.headers.authorization
+  if (!authToken) throw new UnauthenticatedError("JWT required")
 
-    const verifiedToken = jwtHelper.verify(authToken)
+  const verifiedToken = jwtHelper.verify(authToken)
 
-    req.body = { ...req.body, userId: verifiedToken.userId }
+  req.body = { ...req.body, userId: verifiedToken.userId }
 
-    next()
-  } catch (error) {
-    console.error(error)
-    res.sendStatus(500)
-  }
+  next()
 }
