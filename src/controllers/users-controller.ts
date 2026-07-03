@@ -15,7 +15,13 @@ export const userLogIn: RequestHandler = async (req, res) => {
   const isPassCorrect = await compare(password, foundUser.password)
   if (!isPassCorrect) throw new UnauthenticatedError("Incorrect credentials")
 
-  res.send(jwtHelper.sign(foundUser.id))
+  res.json({
+    avatar: foundUser.avatar,
+    jwt: jwtHelper.sign(foundUser.id),
+    signup_date: foundUser.signup_date,
+    stats: foundUser.stats,
+    username: foundUser.username,
+  })
 }
 
 export const userRegister: RequestHandler = async (req, res) => {
@@ -76,16 +82,8 @@ export const userDelete: RequestHandler = async (req, res) => {
 export const userGet: RequestHandler = async (req, res) => {
   const { userId } = req.body
 
-  const foundUser = await db.user.findUnique({
-    select: {
-      avatar: true,
-      signup_date: true,
-      stats: true,
-      username: true,
-    },
-    where: { id: userId },
-  })
+  const foundUser = await db.user.findUnique({ where: { id: userId } })
   if (!foundUser) throw new NotFoundError("User not found")
 
-  res.json(foundUser)
+  res.sendStatus(200)
 }
