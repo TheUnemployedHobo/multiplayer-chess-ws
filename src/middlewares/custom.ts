@@ -16,12 +16,12 @@ export const validateReq = (validators: ValidationChain[]): RequestHandler[] => 
 ]
 
 export const validateJwt: RequestHandler = (req, _, next) => {
-  const authToken = req.headers.authorization
-  if (!authToken) throw new UnauthenticatedError("JWT required")
+  const { authorization } = req.headers
+  if (!authorization) throw new UnauthenticatedError("JWT required")
 
-  const verifiedToken = jwtHelper.verify(authToken)
+  const { userId } = jwtHelper.verify(authorization)
 
-  req.body = { ...req.body, userId: verifiedToken.userId }
+  req.body = { ...req.body, userId }
 
   next()
 }
