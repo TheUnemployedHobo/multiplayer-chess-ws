@@ -2,6 +2,8 @@ import type { Server } from "socket.io"
 
 import { jwtHelper } from "@/lib/utils"
 
+import { onlineUsers } from "./storage"
+
 const initiateSocketIO = (io: Server) => {
   io.use((socket, next) => {
     try {
@@ -18,11 +20,16 @@ const initiateSocketIO = (io: Server) => {
   })
 
   io.on("connection", (socket) => {
-    console.info(`Socket ${socket.data.userId} connected`)
+    const { userId } = socket.data
+
+    console.info(`${userId} connected`)
+    onlineUsers.add(userId)
+
+    io.emit("users:online-count", onlineUsers.size)
 
     socket.on("disconnect", (reason) => {
-      console.info(reason)
-      console.info(`Socket ${socket.data.userId} disconnected`)
+      onlineUsers.delete(userId)
+      console.info(`${userId} disconnected: ${reason}`)
     })
   })
 }
