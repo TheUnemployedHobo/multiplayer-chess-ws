@@ -40,5 +40,14 @@
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.0"
+  },
+  "allowScripts": {
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true,
+    "bcrypt@6.0.0": true,
+    "esbuild@0.28.1": true,
+    "stockfish@18.0.8": true,
+    "@prisma/engines@6.19.3": true,
+    "fsevents@2.3.3": true
   }
 }
