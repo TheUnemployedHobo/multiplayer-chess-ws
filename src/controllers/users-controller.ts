@@ -91,7 +91,9 @@ export const userGetMe: RequestHandler = async (req, res) => {
   res.json(foundUser)
 }
 
-export const userGetAll: RequestHandler = async (_, res) => {
+export const userGetAll: RequestHandler = async (req, res) => {
+  const { userId } = req.body
+
   const allUsers = await db.user.findMany({
     select: {
       avatar: true,
@@ -99,6 +101,7 @@ export const userGetAll: RequestHandler = async (_, res) => {
       signup_date: true,
       username: true,
     },
+    where: { id: { not: userId } },
   })
 
   res.json(allUsers)
