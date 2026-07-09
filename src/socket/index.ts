@@ -1,5 +1,7 @@
 import type { Server } from "socket.io"
 
+import db from "prisma/db"
+
 import { jwtHelper } from "@/lib/utils"
 
 import { onlineUsers } from "./storage"
@@ -22,14 +24,28 @@ const initiateSocketIO = (io: Server) => {
   io.on("connection", (socket) => {
     const { userId } = socket.data
 
-    console.info(`${userId} connected`)
-    onlineUsers.add(userId)
+    onlineUsers.set(userId, socket.id)
 
     io.emit("users:online-count", onlineUsers.size)
 
-    socket.on("disconnect", (reason) => {
+    socket.on("friends:incoming-request", ({ friendId, senderInfo }) => {
+      const friendSocketId = onlineUsers.get(friendId)
+      const payload = { ...senderInfo, userId }
+
+      if (friendSocketId) io.to(friendSocketId).emit("friends:incoming-request", payload)
+    })
+
+    socket.on("friends:accept-request", async ({ friendId, username }) => {
+      await db.friend.create({ data: { friendId, userId } })
+
+      socket.emit("friends:accept-request", `You and ${username} are now friends`)
+
+      const friendSocketId = onlineUsers.get(friendId)
+      if (friendSocketId) io.to(friendSocketId).emit("friends:accept-request", `You and ${username} are now friends`)
+    })
+
+    socket.on("disconnect", () => {
       onlineUsers.delete(userId)
-      console.info(`${userId} disconnected: ${reason}`)
     })
   })
 }
