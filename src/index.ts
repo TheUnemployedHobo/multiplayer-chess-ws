@@ -23,7 +23,7 @@ app.use(globalErrorHandler)
 
 initiateSocketIO(io)
 
-const PORT = process.env["PORT"]!
+const PORT = +process.env["PORT"]!
 const SERVER_URL = process.env["SERVER_URL"]!
 
-server.listen(PORT, () => console.info(`Server running at ${SERVER_URL}`))
+server.listen(PORT, "0.0.0.0", () => console.info(`Server running at ${SERVER_URL}`))
