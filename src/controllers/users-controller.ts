@@ -94,14 +94,21 @@ export const userGetMe: RequestHandler = async (req, res) => {
 export const userGetAll: RequestHandler = async (req, res) => {
   const { userId } = req.body
 
-  const allUsers = await db.user.findMany({
-    select: {
-      avatar: true,
-      id: true,
-      signup_date: true,
-      username: true,
-    },
-    where: { id: { not: userId } },
+  const allUsers = await db.$transaction(async (tx) => {
+    const friends = await db.friend.findMany({
+      select: { friend: { select: { id: true } } },
+      where: { userId },
+    })
+
+    return tx.user.findMany({
+      select: {
+        avatar: true,
+        id: true,
+        signup_date: true,
+        username: true,
+      },
+      where: { id: { notIn: [userId, ...friends.map((f) => f.friend.id)] } },
+    })
   })
 
   res.json(allUsers)
