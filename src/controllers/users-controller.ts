@@ -79,7 +79,7 @@ export const userDelete: RequestHandler = async (req, res) => {
   res.sendStatus(200)
 }
 
-export const userGet: RequestHandler = async (req, res) => {
+export const userGetMe: RequestHandler = async (req, res) => {
   const { userId } = req.body
 
   const foundUser = await db.user.findUnique({
@@ -89,4 +89,17 @@ export const userGet: RequestHandler = async (req, res) => {
   if (!foundUser) throw new NotFoundError("User not found")
 
   res.json(foundUser)
+}
+
+export const userGetAll: RequestHandler = async (_, res) => {
+  const allUsers = await db.user.findMany({
+    select: {
+      avatar: true,
+      id: true,
+      signup_date: true,
+      username: true,
+    },
+  })
+
+  res.json(allUsers)
 }
