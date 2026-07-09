@@ -1,1 +1,1 @@
-export const onlineUsers = new Set<string>()
+export const onlineUsers = new Map<string, string>()
