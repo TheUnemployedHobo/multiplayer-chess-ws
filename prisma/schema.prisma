@@ -34,6 +34,8 @@ model Friend {
   friendId String @db.ObjectId
   user     User   @relation("UserFriends", fields: [userId], references: [id])
   friend   User   @relation("FriendUsers", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }
 
 model Match {
