@@ -1,10 +1,10 @@
 import type { Server } from "socket.io"
 
-import db from "prisma/db"
-
 import { jwtHelper } from "@/lib/utils"
 
+import friendsSocket from "./friends-socket"
 import { onlineUsers } from "./storage"
+import usersSocket from "./users-socket"
 
 const initiateSocketIO = (io: Server) => {
   io.use((socket, next) => {
@@ -26,32 +26,8 @@ const initiateSocketIO = (io: Server) => {
 
     onlineUsers.set(userId, socket.id)
 
-    io.emit("users:online-count", onlineUsers.size)
-
-    socket.on("friends:incoming-request", ({ friendId, ...senderInfo }) => {
-      const friendSocketId = onlineUsers.get(friendId)
-      const payload = { ...senderInfo, userId }
-
-      if (friendSocketId) io.to(friendSocketId).emit("friends:incoming-request", payload)
-    })
-
-    socket.on("friends:accept-request", async (friendId) => {
-      const [{ user: me }, { user: them }] = await db.$transaction([
-        db.friend.create({
-          data: { friendId: friendId, userId: userId },
-          select: { user: { select: { username: true } } },
-        }),
-        db.friend.create({
-          data: { friendId: userId, userId: friendId },
-          select: { user: { select: { username: true } } },
-        }),
-      ])
-
-      socket.emit("friends:accept-request", `You and ${them.username} are now friends`)
-
-      const friendSocketId = onlineUsers.get(friendId)
-      if (friendSocketId) io.to(friendSocketId).emit("friends:accept-request", `You and ${me.username} are now friends`)
-    })
+    usersSocket(io, socket)
+    friendsSocket(io, socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
