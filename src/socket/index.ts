@@ -35,13 +35,22 @@ const initiateSocketIO = (io: Server) => {
       if (friendSocketId) io.to(friendSocketId).emit("friends:incoming-request", payload)
     })
 
-    socket.on("friends:accept-request", async ({ friendId, username }) => {
-      await db.friend.create({ data: { friendId, userId } })
+    socket.on("friends:accept-request", async (friendId) => {
+      const [{ user: me }, { user: them }] = await db.$transaction([
+        db.friend.create({
+          data: { friendId: friendId, userId: userId },
+          select: { user: { select: { username: true } } },
+        }),
+        db.friend.create({
+          data: { friendId: userId, userId: friendId },
+          select: { user: { select: { username: true } } },
+        }),
+      ])
 
-      socket.emit("friends:accept-request", `You and ${username} are now friends`)
+      socket.emit("friends:accept-request", `You and ${them.username} are now friends`)
 
       const friendSocketId = onlineUsers.get(friendId)
-      if (friendSocketId) io.to(friendSocketId).emit("friends:accept-request", `You and ${username} are now friends`)
+      if (friendSocketId) io.to(friendSocketId).emit("friends:accept-request", `You and ${me.username} are now friends`)
     })
 
     socket.on("disconnect", () => {
