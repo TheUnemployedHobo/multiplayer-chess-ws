@@ -11,6 +11,7 @@ export const friendGet: RequestHandler = async (req, res) => {
         select: {
           avatar: true,
           id: true,
+          signup_date: true,
           stats: true,
           username: true,
         },
