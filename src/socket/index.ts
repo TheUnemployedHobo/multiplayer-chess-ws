@@ -28,7 +28,7 @@ const initiateSocketIO = (io: Server) => {
 
     io.emit("users:online-count", onlineUsers.size)
 
-    socket.on("friends:incoming-request", ({ friendId, senderInfo }) => {
+    socket.on("friends:incoming-request", ({ friendId, ...senderInfo }) => {
       const friendSocketId = onlineUsers.get(friendId)
       const payload = { ...senderInfo, userId }
 
