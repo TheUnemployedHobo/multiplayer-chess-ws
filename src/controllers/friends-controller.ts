@@ -2,6 +2,8 @@ import type { RequestHandler } from "express"
 
 import db from "prisma/db"
 
+import { onlineUsers } from "@/socket/utilities"
+
 export const friendGet: RequestHandler = async (req, res) => {
   const { userId } = req.body
 
@@ -20,5 +22,10 @@ export const friendGet: RequestHandler = async (req, res) => {
     where: { userId },
   })
 
-  res.json(friends)
+  const response = friends.map(({ friend }) => ({
+    ...friend,
+    status: onlineUsers.get(friend.id)?.status,
+  }))
+
+  res.json(response)
 }
