@@ -3,8 +3,7 @@ import type { Server } from "socket.io"
 import { jwtHelper } from "@/lib/utils"
 
 import friendsSocket from "./friends-socket"
-import { onlineUsers } from "./storage"
-import usersSocket from "./users-socket"
+import { friendStatusUpdate, onlineUsers, sendOnlineCount } from "./utilities"
 
 const initiateSocketIO = (io: Server) => {
   io.use((socket, next) => {
@@ -24,13 +23,15 @@ const initiateSocketIO = (io: Server) => {
   io.on("connection", (socket) => {
     const { userId } = socket.data
 
-    onlineUsers.set(userId, socket.id)
+    onlineUsers.set(userId, { socketId: socket.id, status: "online" })
 
-    usersSocket(io, socket)
+    sendOnlineCount(io)
     friendsSocket(io, socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
+      sendOnlineCount(io)
+      friendStatusUpdate(io, userId, undefined)
     })
   })
 }
