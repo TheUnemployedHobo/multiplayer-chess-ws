@@ -2,16 +2,16 @@ import type { Server, Socket } from "socket.io"
 
 import db from "prisma/db"
 
-import { onlineUsers } from "./storage"
+import { friendStatusUpdate, onlineUsers } from "./utilities"
 
 const friendsSocket = (io: Server, socket: Socket) => {
   const { userId } = socket.data
 
   socket.on("friends:incoming-request", ({ friendId, ...senderInfo }) => {
-    const friendSocketId = onlineUsers.get(friendId)
+    const friend = onlineUsers.get(friendId)
     const payload = { ...senderInfo, userId }
 
-    if (friendSocketId) io.to(friendSocketId).emit("friends:incoming-request", payload)
+    if (friend) io.to(friend.socketId).emit("friends:incoming-request", payload)
   })
 
   socket.on("friends:accept-request", async (friendId) => {
@@ -29,12 +29,14 @@ const friendsSocket = (io: Server, socket: Socket) => {
 
       socket.emit("friends:accept-request", `You and ${them.username} are now friends`)
 
-      const friendSocketId = onlineUsers.get(friendId)
-      if (friendSocketId) io.to(friendSocketId).emit("friends:accept-request", `You and ${me.username} are now friends`)
+      const friend = onlineUsers.get(friendId)
+      if (friend) io.to(friend.socketId).emit("friends:accept-request", `You and ${me.username} are now friends`)
     } catch (err) {
       console.error(err)
     }
   })
+
+  friendStatusUpdate(io, userId, "online")
 }
 
 export default friendsSocket
