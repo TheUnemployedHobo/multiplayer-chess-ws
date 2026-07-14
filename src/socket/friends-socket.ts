@@ -36,6 +36,27 @@ const friendsSocket = (io: Server, socket: Socket) => {
     }
   })
 
+  socket.on("friends:unfriend", async (friendId) => {
+    try {
+      await db.friend.deleteMany({
+        where: {
+          OR: [
+            { friendId: friendId, userId: userId },
+            { friendId: userId, userId: friendId },
+          ],
+        },
+      })
+
+      socket.emit("friends:unfriend", undefined)
+
+      const friend = onlineUsers.get(friendId)
+
+      if (friend) io.to(friend.socketId).emit("friends:unfriend", undefined)
+    } catch (err) {
+      console.error(err)
+    }
+  })
+
   friendStatusUpdate(io, userId, "online")
 }
 
