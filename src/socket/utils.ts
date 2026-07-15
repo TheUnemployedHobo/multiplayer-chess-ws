@@ -1,5 +1,5 @@
 import type { Chess } from "chess.js"
-import type { Server } from "socket.io"
+import type { Server, Socket } from "socket.io"
 import type { StockfishEngine } from "stockfish"
 
 import db from "prisma/db"
@@ -24,3 +24,11 @@ export const updateFriendStatus = async (io: Server, userId: string, status: "on
 }
 
 export const sendOnlineCount = (io: Server) => io.emit("users:online-count", onlineUsers.size)
+
+export const deleteBotGameInstance = (socket: Socket) => {
+  const game = botGames.get(socket.id)
+  if (!game) return
+
+  game.engine.terminate()
+  botGames.delete(socket.id)
+}
