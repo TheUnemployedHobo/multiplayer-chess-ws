@@ -4,7 +4,7 @@ import { jwtHelper } from "@/lib/utils"
 
 import registerBotEvents from "./bot-events"
 import registerFriendEvents from "./friend-events"
-import { onlineUsers, sendOnlineCount, updateFriendStatus } from "./utilities"
+import { onlineUsers, sendOnlineCount, updateFriendStatus } from "./utils"
 
 const initiateSocketIO = (io: Server) => {
   io.use((socket, next) => {

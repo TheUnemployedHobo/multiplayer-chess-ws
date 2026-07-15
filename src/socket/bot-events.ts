@@ -4,7 +4,7 @@ import { Chess } from "chess.js"
 
 import { createEngine } from "@/lib/stockfish"
 
-import { botGames } from "./utilities"
+import { botGames } from "./utils"
 
 const registerBotEvents = (socket: Socket) => {
   socket.on("bot:start", async (difficulty) => {

@@ -2,7 +2,7 @@ import type { RequestHandler } from "express"
 
 import db from "prisma/db"
 
-import { onlineUsers } from "@/socket/utilities"
+import { onlineUsers } from "@/socket/utils"
 
 export const friendGet: RequestHandler = async (req, res) => {
   const { userId } = req.body

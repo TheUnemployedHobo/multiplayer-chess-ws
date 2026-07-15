@@ -2,7 +2,7 @@ import type { Server, Socket } from "socket.io"
 
 import db from "prisma/db"
 
-import { onlineUsers, updateFriendStatus } from "./utilities"
+import { onlineUsers, updateFriendStatus } from "./utils"
 
 const registerFriendEvents = (io: Server, socket: Socket) => {
   const { userId } = socket.data
