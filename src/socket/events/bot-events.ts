@@ -51,7 +51,7 @@ const registerBotEvents = (socket: Socket) => {
     )
     if (!botMove) return
 
-    socket.emit("bot:moved", { from: botFrom, promotion: botPromotion, to: botTo })
+    socket.emit("bot:move", { from: botFrom, promotion: botPromotion, to: botTo })
 
     if (game.chess.isGameOver()) socket.emit("bot:finished", undefined)
   })
