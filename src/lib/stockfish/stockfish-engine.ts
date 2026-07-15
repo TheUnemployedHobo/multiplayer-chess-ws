@@ -1,21 +1,23 @@
-import Stockfish from "stockfish"
+import Stockfish, { type StockfishEngine } from "stockfish"
 
-let engine: Awaited<ReturnType<typeof Stockfish>>
+export const createEngine = async () => {
+  const engine = await Stockfish()
 
-const listeners = new Set<(message: string) => void>()
-
-export const getEngine = async () => {
-  if (engine) return engine
-
-  engine = await Stockfish()
-
-  engine.print = (message: string) => listeners.forEach((listener) => listener(message))
+  engine.sendCommand("uci")
+  engine.sendCommand("isready")
 
   return engine
 }
 
-export const subscribe = (listener: (message: string) => void) => {
-  listeners.add(listener)
+export const subscribe = (engine: StockfishEngine, listener: (message: string) => void) => {
+  const previous = engine.print
 
-  return () => listeners.delete(listener)
+  engine.print = (message) => {
+    previous?.(message)
+    listener(message)
+  }
+
+  return () => {
+    engine.print = previous ?? (() => {})
+  }
 }
