@@ -1,8 +1,11 @@
+import type { Chess } from "chess.js"
 import type { Server } from "socket.io"
+import type { StockfishEngine } from "stockfish"
 
 import db from "prisma/db"
 
 export const onlineUsers = new Map<string, { socketId: string; status: "online" | "playing" }>()
+export const botGames = new Map<string, { chess: Chess; engine: StockfishEngine }>()
 
 export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
