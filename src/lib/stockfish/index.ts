@@ -1,10 +1,12 @@
-import { getEngine, subscribe } from "./stockfish-engine"
+import type { StockfishEngine } from "stockfish"
 
-export const getBestMove = async (fen: string, depth = 10) => {
-  const engine = await getEngine()
+import { createEngine, subscribe } from "./stockfish-engine"
 
+export { createEngine }
+
+export const getBestMove = async (engine: StockfishEngine, fen: string, depth = 10) => {
   return new Promise<string>((resolve) => {
-    const unsubscribe = subscribe((message) => {
+    const unsubscribe = subscribe(engine, (message) => {
       if (!message.startsWith("bestmove")) return
 
       unsubscribe()
