@@ -2,9 +2,9 @@ import type { Server, Socket } from "socket.io"
 
 import db from "prisma/db"
 
-import { friendStatusUpdate, onlineUsers } from "./utilities"
+import { onlineUsers, updateFriendStatus } from "./utilities"
 
-const friendsSocket = (io: Server, socket: Socket) => {
+const registerFriendEvents = (io: Server, socket: Socket) => {
   const { userId } = socket.data
 
   socket.on("friends:incoming-request", ({ friendId, ...senderInfo }) => {
@@ -57,7 +57,7 @@ const friendsSocket = (io: Server, socket: Socket) => {
     }
   })
 
-  friendStatusUpdate(io, userId, "online")
+  updateFriendStatus(io, userId, "online")
 }
 
-export default friendsSocket
+export default registerFriendEvents
