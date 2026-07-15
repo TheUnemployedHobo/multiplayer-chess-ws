@@ -2,7 +2,8 @@ import type { Server } from "socket.io"
 
 import { jwtHelper } from "@/lib/utils"
 
-import registerFriendEvents from "./friends-socket"
+import registerBotEvents from "./bot-events"
+import registerFriendEvents from "./friend-events"
 import { onlineUsers, sendOnlineCount, updateFriendStatus } from "./utilities"
 
 const initiateSocketIO = (io: Server) => {
@@ -27,6 +28,7 @@ const initiateSocketIO = (io: Server) => {
 
     sendOnlineCount(io)
     registerFriendEvents(io, socket)
+    registerBotEvents(socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
