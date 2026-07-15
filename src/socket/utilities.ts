@@ -4,7 +4,7 @@ import db from "prisma/db"
 
 export const onlineUsers = new Map<string, { socketId: string; status: "online" | "playing" }>()
 
-export const friendStatusUpdate = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
+export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
     const friends = await db.friend.findMany({
       select: { friendId: true },
