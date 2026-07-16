@@ -1,62 +1,58 @@
 import type { Socket } from "socket.io"
 
-import { Chess, type PieceSymbol, type Square } from "chess.js"
-
-import { createEngine, getBestMove } from "@/lib/stockfish"
+import { Game } from "js-chess-engine"
 
 import { botGames } from "../utils"
 
-type MovePayload = { from: Square; promotion?: PieceSymbol; to: Square }
+type MovePayload = { from: string; to: string }
 
 const registerBotEvents = (socket: Socket) => {
-  socket.on("bot:start", async (skill: number) => {
-    const existingGame = botGames.get(socket.id)
-
-    if (existingGame) {
-      existingGame.engine.terminate()
-      botGames.delete(socket.id)
-    }
-
-    const chess = new Chess()
-    const engine = await createEngine()
-
-    engine.sendCommand(`setoption name Skill Level value ${skill}`)
-    engine.sendCommand("ucinewgame")
-
-    botGames.set(socket.id, { chess, engine })
+  socket.on("bot:start", (skill: 1 | 2 | 3 | 4 | 5) => {
+    botGames.delete(socket.id)
+    botGames.set(socket.id, { game: new Game(), level: skill })
 
     socket.emit("bot:start", undefined)
   })
 
-  socket.on("bot:move", async ({ from, promotion, to }: MovePayload) => {
-    const game = botGames.get(socket.id)
-    if (!game) return
+  socket.on("bot:move", ({ from, to }: MovePayload) => {
+    const instance = botGames.get(socket.id)
+    if (!instance) return
 
-    const playerMove = game.chess.move(promotion ? { from, promotion, to } : { from, to })
-    if (!playerMove) return
-
-    if (game.chess.isGameOver()) {
-      socket.emit("bot:finished", undefined)
+    try {
+      instance.game.move(from.toUpperCase(), to.toUpperCase())
+    } catch {
       return
     }
 
-    const bestMove = await getBestMove(game.engine, game.chess.fen())
+    const playerBoard = instance.game.exportJson()
+    if (playerBoard.checkMate || playerBoard.staleMate || playerBoard.halfMove >= 100) {
+      socket.emit("bot:finished", playerBoard)
+      botGames.delete(socket.id)
+      return
+    }
 
-    const botFrom = bestMove.slice(0, 2) as Square
-    const botTo = bestMove.slice(2, 4) as Square
-    const botPromotion = bestMove.length === 5 ? (bestMove[4] as PieceSymbol) : undefined
+    const { board, move } = instance.game.ai({ level: instance.level })
 
-    const botMove = game.chess.move(
-      botPromotion ? { from: botFrom, promotion: botPromotion, to: botTo } : { from: botFrom, to: botTo },
-    )
-    if (!botMove) return
+    const [entry] = Object.entries(move)
+    if (!entry) return
 
-    socket.emit("bot:move", { from: botFrom, promotion: botPromotion, to: botTo })
+    const [botFrom, botTo] = entry
 
-    if (game.chess.isGameOver()) socket.emit("bot:finished", undefined)
+    socket.emit("bot:move", {
+      from: botFrom.toLowerCase(),
+      to: botTo.toLowerCase(),
+    })
+
+    if (board.checkMate || board.staleMate || board.halfMove >= 100) {
+      socket.emit("bot:finished", board)
+      botGames.delete(socket.id)
+    }
   })
 
-  socket.on("bot:resign", () => {})
+  socket.on("bot:resign", () => {
+    botGames.delete(socket.id)
+    socket.emit("bot:finished", undefined)
+  })
 }
 
 export default registerBotEvents
