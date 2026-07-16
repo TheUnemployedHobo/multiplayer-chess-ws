@@ -1,11 +1,10 @@
-import type { Chess } from "chess.js"
-import type { Server, Socket } from "socket.io"
-import type { StockfishEngine } from "stockfish"
+import type { Server } from "socket.io"
 
+import { Game } from "js-chess-engine"
 import db from "prisma/db"
 
 export const onlineUsers = new Map<string, { socketId: string; status: "online" | "playing" }>()
-export const botGames = new Map<string, { chess: Chess; engine: StockfishEngine }>()
+export const botGames = new Map<string, { game: Game; level: 1 | 2 | 3 | 4 | 5 }>()
 
 export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
@@ -24,11 +23,3 @@ export const updateFriendStatus = async (io: Server, userId: string, status: "on
 }
 
 export const sendOnlineCount = (io: Server) => io.emit("users:online-count", onlineUsers.size)
-
-export const deleteBotGameInstance = (socket: Socket) => {
-  const game = botGames.get(socket.id)
-  if (!game) return
-
-  game.engine.terminate()
-  botGames.delete(socket.id)
-}
