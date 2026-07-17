@@ -25,13 +25,13 @@ const registerBotEvents = (socket: Socket) => {
     }
 
     const playerBoard = instance.game.exportJson()
-    if (playerBoard.checkMate || playerBoard.staleMate || playerBoard.halfMove >= 100) {
-      socket.emit("bot:finished", playerBoard)
+    if (playerBoard.isFinished) {
+      socket.emit("bot:finished", undefined)
       botGames.delete(socket.id)
       return
     }
 
-    const { board, move } = instance.game.ai({ level: instance.level })
+    const { board, move } = instance.game.ai({ level: instance.level, randomness: 0 })
 
     const [entry] = Object.entries(move)
     if (!entry) return
@@ -43,15 +43,15 @@ const registerBotEvents = (socket: Socket) => {
       to: botTo.toLowerCase(),
     })
 
-    if (board.checkMate || board.staleMate || board.halfMove >= 100) {
-      socket.emit("bot:finished", board)
+    if (board.isFinished) {
+      socket.emit("bot:finished", undefined)
       botGames.delete(socket.id)
     }
   })
 
   socket.on("bot:resign", () => {
     botGames.delete(socket.id)
-    socket.emit("bot:finished", undefined)
+    socket.emit("bot:resign", undefined)
   })
 }
 
