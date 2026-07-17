@@ -1,25 +1,28 @@
-import type { Socket } from "socket.io"
+import type { Server, Socket } from "socket.io"
 
 import { Game } from "js-chess-engine"
 
-import { botGames } from "../utils"
+import { type AiLevelsType, botGames, type MovePayloadType, sendOnlineCount, updateFriendStatus } from "../utils"
 
-type MovePayload = { from: string; to: string }
+const registerBotEvents = (io: Server, socket: Socket) => {
+  const { userId } = socket.data
 
-const registerBotEvents = (socket: Socket) => {
-  socket.on("bot:start", (skill: 1 | 2 | 3 | 4 | 5) => {
+  socket.on("bot:start", (skill: AiLevelsType) => {
     botGames.delete(socket.id)
-    botGames.set(socket.id, { game: new Game(), level: skill })
+    botGames.set(socket.id, { game: new Game(), history: [], level: skill })
+
+    updateFriendStatus(io, userId, "playing")
 
     socket.emit("bot:start", undefined)
   })
 
-  socket.on("bot:move", ({ from, to }: MovePayload) => {
+  socket.on("bot:move", ({ from, to }: MovePayloadType) => {
     const instance = botGames.get(socket.id)
     if (!instance) return
 
     try {
       instance.game.move(from.toUpperCase(), to.toUpperCase())
+      instance.history.push({ from: from.toUpperCase(), to: to.toUpperCase() })
     } catch {
       return
     }
@@ -28,6 +31,7 @@ const registerBotEvents = (socket: Socket) => {
     if (playerBoard.isFinished) {
       socket.emit("bot:finished", undefined)
       botGames.delete(socket.id)
+      updateFriendStatus(io, userId, "online")
       return
     }
 
@@ -38,20 +42,37 @@ const registerBotEvents = (socket: Socket) => {
 
     const [botFrom, botTo] = entry
 
-    socket.emit("bot:move", {
-      from: botFrom.toLowerCase(),
-      to: botTo.toLowerCase(),
-    })
+    instance.history.push({ from: botFrom, to: botTo })
+    socket.emit("bot:move", { from: botFrom.toLowerCase(), to: botTo.toLowerCase() })
 
     if (board.isFinished) {
       socket.emit("bot:finished", undefined)
       botGames.delete(socket.id)
+      updateFriendStatus(io, userId, "online")
     }
   })
 
   socket.on("bot:resign", () => {
     botGames.delete(socket.id)
+    updateFriendStatus(io, userId, "online")
     socket.emit("bot:resign", undefined)
+    sendOnlineCount(io)
+  })
+
+  socket.on("bot:undo", () => {
+    const instance = botGames.get(socket.id)
+    if (!instance) return
+
+    instance.history.pop()
+    instance.history.pop()
+
+    const game = new Game()
+
+    instance.history.forEach(({ from, to }) => game.move(from.toUpperCase(), to.toUpperCase()))
+
+    instance.game = game
+
+    socket.emit("bot:undo", undefined)
   })
 }
 
