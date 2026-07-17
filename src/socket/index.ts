@@ -28,7 +28,7 @@ const initiateSocketIO = (io: Server) => {
 
     sendOnlineCount(io)
     registerFriendEvents(io, socket)
-    registerBotEvents(socket)
+    registerBotEvents(io, socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
