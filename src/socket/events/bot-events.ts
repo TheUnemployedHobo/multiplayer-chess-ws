@@ -2,7 +2,7 @@ import type { Server, Socket } from "socket.io"
 
 import { Game } from "js-chess-engine"
 
-import { type AiLevelsType, botGames, type MovePayloadType, sendOnlineCount, updateFriendStatus } from "../utils"
+import { type AiLevelsType, botGames, type MovePayloadType, updateFriendStatus } from "../utils"
 
 const registerBotEvents = (io: Server, socket: Socket) => {
   const { userId } = socket.data
@@ -56,7 +56,6 @@ const registerBotEvents = (io: Server, socket: Socket) => {
     botGames.delete(socket.id)
     updateFriendStatus(io, userId, "online")
     socket.emit("bot:resign", undefined)
-    sendOnlineCount(io)
   })
 
   socket.on("bot:undo", () => {
