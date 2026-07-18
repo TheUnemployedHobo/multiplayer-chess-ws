@@ -4,6 +4,7 @@ import { jwtHelper } from "@/lib/utils"
 
 import registerBotEvents from "./events/bot-events"
 import registerFriendEvents from "./events/friend-events"
+import registerUserEvents from "./events/user-events"
 import { botGames, onlineUsers, sendOnlineCount, updateFriendStatus } from "./utils"
 
 const initiateSocketIO = (io: Server) => {
@@ -26,7 +27,7 @@ const initiateSocketIO = (io: Server) => {
 
     onlineUsers.set(userId, { socketId: socket.id, status: "online" })
 
-    sendOnlineCount(io)
+    registerUserEvents(io, socket)
     registerFriendEvents(io, socket)
     registerBotEvents(io, socket)
 
