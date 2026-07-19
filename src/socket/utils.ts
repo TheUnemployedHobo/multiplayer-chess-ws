@@ -1,13 +1,13 @@
+import type { Chess } from "chess.js"
 import type { Server } from "socket.io"
 
 import { Game } from "js-chess-engine"
 import db from "prisma/db"
 
 export type AiLevelsType = 1 | 2 | 3 | 4 | 5
-export type MovePayloadType = { from: string; to: string }
 
 export const onlineUsers = new Map<string, { socketId: string; status: "online" | "playing" }>()
-export const botGames = new Map<string, { game: Game; history: MovePayloadType[]; level: AiLevelsType }>()
+export const botGames = new Map<string, { chess: Chess; engine: Game; level: AiLevelsType }>()
 
 export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
@@ -26,3 +26,15 @@ export const updateFriendStatus = async (io: Server, userId: string, status: "on
 }
 
 export const sendOnlineCount = (io: Server) => io.emit("users:online-count", onlineUsers.size)
+
+export const determineGameResult = (options: Partial<{ chess: Chess; result: string; winner: "Black" | "White" }>) => {
+  const { chess, result, winner } = options
+
+  if (!chess) return { result, winner: winner ?? null }
+
+  if (chess.isCheckmate()) return { result: "Checkmate", winner: chess.turn() === "w" ? "Black" : "White" }
+  if (chess.isStalemate()) return { result: "Stalemate", winner: null }
+  if (chess.isInsufficientMaterial()) return { result: "Insufficient material", winner: null }
+  if (chess.isThreefoldRepetition()) return { result: "Three fold repetition", winner: null }
+  if (chess.isDrawByFiftyMoves()) return { result: "50 move rule", winner: null }
+}
