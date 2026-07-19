@@ -4,7 +4,7 @@ import { jwtHelper } from "@/lib/utils"
 
 import registerBotEvents from "./events/bot-events"
 import registerFriendEvents from "./events/friend-events"
-import registerGameEvents from "./events/game-events"
+import registerMatchEvents from "./events/match-events"
 import registerUserEvents from "./events/user-events"
 import { botGames, onlineUsers, sendOnlineCount, updateFriendStatus } from "./utils"
 
@@ -31,7 +31,7 @@ const initiateSocketIO = (io: Server) => {
     registerUserEvents(io, socket)
     registerFriendEvents(io, socket)
     registerBotEvents(io, socket)
-    registerGameEvents(io, socket)
+    registerMatchEvents(io, socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
