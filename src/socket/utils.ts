@@ -6,8 +6,13 @@ import db from "prisma/db"
 
 export type AiLevelsType = 1 | 2 | 3 | 4 | 5
 
+type UserIds = { socketId: string; userId: string }
+
 export const onlineUsers = new Map<string, { socketId: string; status: "online" | "playing" }>()
 export const botGames = new Map<string, { chess: Chess; engine: Game; level: AiLevelsType }>()
+export const activeGames = new Map<string, { black: UserIds; chess: Chess; roomId: string; white: UserIds }>()
+export const playerRooms = new Map<string, string>()
+export const matchmakingQueue = new Set<string>()
 
 export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
@@ -37,4 +42,8 @@ export const determineGameResult = (options: Partial<{ chess: Chess; result: str
   if (chess.isInsufficientMaterial()) return { result: "Insufficient material", winner: null }
   if (chess.isThreefoldRepetition()) return { result: "Three fold repetition", winner: null }
   if (chess.isDrawByFiftyMoves()) return { result: "50 move rule", winner: null }
+
+  return null
 }
+
+export const createRoomId = () => crypto.randomUUID()
