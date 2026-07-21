@@ -21,6 +21,19 @@ const registerMatchEvents = (io: Server, socket: Socket) => {
     matchmakingQueue.delete(whiteId)
     matchmakingQueue.delete(blackId)
 
+    const [whiteUser, blackUser] = await db.$transaction([
+      db.user.findUnique({
+        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
+        where: { id: whiteId },
+      }),
+      db.user.findUnique({
+        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
+        where: { id: blackId },
+      }),
+    ])
+
+    if (!whiteUser || !blackUser) return
+
     const whiteSocket = onlineUsers.get(whiteId)
     const blackSocket = onlineUsers.get(blackId)
     if (!whiteSocket || !blackSocket) return
@@ -42,25 +55,6 @@ const registerMatchEvents = (io: Server, socket: Socket) => {
 
     updateFriendStatus(io, whiteId, "playing")
     updateFriendStatus(io, blackId, "playing")
-
-    const [whiteUser, blackUser] = await db.$transaction([
-      db.user.findUnique({
-        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-        where: { id: whiteId },
-      }),
-      db.user.findUnique({
-        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-        where: { id: blackId },
-      }),
-    ])
-
-    if (!whiteUser || !blackUser) {
-      io.in(roomId).socketsLeave(roomId)
-      activeGames.delete(roomId)
-      playerRooms.delete(whiteId)
-      playerRooms.delete(blackId)
-      return
-    }
 
     io.to(whiteSocket.socketId).emit("matchmaking:join", {
       avatar: blackUser.avatar,
