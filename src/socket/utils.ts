@@ -5,6 +5,7 @@ import { Game } from "js-chess-engine"
 import db from "prisma/db"
 
 export type AiLevelsType = 1 | 2 | 3 | 4 | 5
+export type MovePayloadType = { from: string; promotion: string; to: string }
 
 type UserIds = { socketId: string; userId: string }
 
@@ -16,10 +17,7 @@ export const matchmakingQueue = new Set<string>()
 
 export const updateFriendStatus = async (io: Server, userId: string, status: "online" | "playing" | undefined) => {
   try {
-    const friends = await db.friend.findMany({
-      select: { friendId: true },
-      where: { userId },
-    })
+    const friends = await db.friend.findMany({ select: { friendId: true }, where: { userId } })
 
     friends.forEach(({ friendId }) => {
       const onlineFriend = onlineUsers.get(friendId)
@@ -32,11 +30,7 @@ export const updateFriendStatus = async (io: Server, userId: string, status: "on
 
 export const sendOnlineCount = (io: Server) => io.emit("users:online-count", onlineUsers.size)
 
-export const determineGameResult = (options: Partial<{ chess: Chess; result: string; winner: "Black" | "White" }>) => {
-  const { chess, result, winner } = options
-
-  if (!chess) return { result, winner: winner ?? null }
-
+export const determineGameResult = (chess: Chess) => {
   if (chess.isCheckmate()) return { result: "Checkmate", winner: chess.turn() === "w" ? "Black" : "White" }
   if (chess.isStalemate()) return { result: "Stalemate", winner: null }
   if (chess.isInsufficientMaterial()) return { result: "Insufficient material", winner: null }
@@ -45,5 +39,3 @@ export const determineGameResult = (options: Partial<{ chess: Chess; result: str
 
   return null
 }
-
-export const createRoomId = () => crypto.randomUUID()
