@@ -3,7 +3,7 @@ import type { Server, Socket } from "socket.io"
 import { Chess, type PieceSymbol } from "chess.js"
 import { Game } from "js-chess-engine"
 
-import { type AiLevelsType, botGames, determineGameResult, updateFriendStatus } from "../utils"
+import { type AiLevelsType, botGames, determineGameResult, type MovePayloadType, updateFriendStatus } from "../utils"
 
 const registerBotEvents = (io: Server, socket: Socket) => {
   const { userId } = socket.data
@@ -14,7 +14,7 @@ const registerBotEvents = (io: Server, socket: Socket) => {
     socket.emit("bot:start", undefined)
   })
 
-  socket.on("bot:move", ({ from, promotion, to }: { from: string; promotion: string; to: string }) => {
+  socket.on("bot:move", ({ from, promotion, to }: MovePayloadType) => {
     const instance = botGames.get(userId)
     if (!instance) return
 
@@ -28,7 +28,7 @@ const registerBotEvents = (io: Server, socket: Socket) => {
     if (instance.chess.isGameOver()) {
       botGames.delete(userId)
       updateFriendStatus(io, userId, "online")
-      socket.emit("bot:finished", determineGameResult({ chess: instance.chess }))
+      socket.emit("bot:finished", determineGameResult(instance.chess))
       return
     }
 
@@ -45,12 +45,12 @@ const registerBotEvents = (io: Server, socket: Socket) => {
     if (instance.chess.isGameOver()) {
       botGames.delete(userId)
       updateFriendStatus(io, userId, "online")
-      socket.emit("bot:finished", determineGameResult({ chess: instance.chess }))
+      socket.emit("bot:finished", determineGameResult(instance.chess))
     }
   })
 
   socket.on("bot:resign", () => {
-    socket.emit("bot:resign", undefined)
+    socket.emit("bot:resign", { result: "You resigned", winner: "Black" })
     updateFriendStatus(io, userId, "online")
     botGames.delete(userId)
   })
