@@ -1,13 +1,15 @@
 import type { Server } from "socket.io"
 
+import { botGames, matchmakingQueue, onlineUsers, playerRooms } from "@/lib/storage"
 import { jwtHelper } from "@/lib/utils"
+import { sendOnlineCount, updateFriendStatus } from "@/lib/utils"
 
-import registerBotEvents from "./events/bot-events"
-import registerFriendEvents from "./events/friend-events"
-import registerGameEvents from "./events/game-events"
-import registerMatchEvents from "./events/match-events"
-import registerUserEvents from "./events/user-events"
-import { botGames, matchmakingQueue, onlineUsers, playerRooms, sendOnlineCount, updateFriendStatus } from "./utils"
+import registerBotEvents from "./bot-events"
+import registerChatEvents from "./chat-events"
+import registerFriendEvents from "./friend-events"
+import registerGameEvents from "./game-events"
+import registerMatchEvents from "./match-events"
+import registerUserEvents from "./user-events"
 
 const initiateSocketIO = (io: Server) => {
   io.use((socket, next) => {
@@ -34,6 +36,7 @@ const initiateSocketIO = (io: Server) => {
     registerBotEvents(io, socket)
     registerMatchEvents(io, socket)
     registerGameEvents(io, socket)
+    registerChatEvents(io, socket)
 
     socket.on("disconnect", () => {
       onlineUsers.delete(userId)
