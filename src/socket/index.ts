@@ -1,30 +1,18 @@
 import type { Server } from "socket.io"
 
 import { botGames, matchmakingQueue, onlineUsers, playerRooms } from "@/lib/storage"
-import { jwtHelper } from "@/lib/utils"
-import { sendOnlineCount, updateFriendStatus } from "@/lib/utils"
+import { updateFriendStatus } from "@/lib/utils"
+import { validateSocketJwt } from "@/middlewares/custom"
 
 import registerBotEvents from "./bot-events"
 import registerChatEvents from "./chat-events"
 import registerFriendEvents from "./friend-events"
 import registerGameEvents from "./game-events"
 import registerMatchEvents from "./match-events"
-import registerUserEvents from "./user-events"
+import registerUserEvents, { sendOnlineCount } from "./user-events"
 
 export default function initiateSocketIO(io: Server) {
-  io.use((socket, next) => {
-    try {
-      const { jwt } = socket.handshake.auth
-      if (!jwt) return next(new Error("Unauthorized"))
-
-      const { userId } = jwtHelper.verify(jwt)
-      socket.data.userId = userId
-
-      next()
-    } catch {
-      next(new Error("Unauthorized"))
-    }
-  })
+  io.use(validateSocketJwt)
 
   io.on("connection", (socket) => {
     const { userId } = socket.data
