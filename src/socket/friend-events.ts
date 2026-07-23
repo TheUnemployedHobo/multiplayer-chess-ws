@@ -1,14 +1,13 @@
 import type { Server, Socket } from "socket.io"
 
-import { Chess } from "chess.js"
 import db from "prisma/db"
 
-import { activeGames, onlineUsers, playerRooms } from "@/lib/storage"
-import { updateFriendStatus } from "@/lib/utils"
+import { onlineUsers } from "@/lib/storage"
+import { createGame, updateFriendStatus } from "@/lib/utils"
 
 type InvitePayloadType = { invitee: { id: string; username: string }; inviter: { avatar: string; username: string } }
 
-const registerFriendEvents = (io: Server, socket: Socket) => {
+export default function registerFriendEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
   socket.on("friend:incoming-request", ({ friendId, ...senderInfo }) => {
@@ -64,63 +63,7 @@ const registerFriendEvents = (io: Server, socket: Socket) => {
     io.to(friend.socketId).emit("friend:invite-to-game", { payload: { ...inviter, description, id: userId }, role: "invitee" })
   })
 
-  socket.on("friend:invite-to-game:accept", async (friendId: string) => {
-    try {
-      console.log(friendId)
-
-      const [whiteUser, blackUser] = await db.$transaction([
-        db.user.findUnique({
-          select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-          where: { id: userId },
-        }),
-        db.user.findUnique({
-          select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-          where: { id: friendId },
-        }),
-      ])
-
-      if (!whiteUser || !blackUser) return
-
-      const whiteSocket = onlineUsers.get(whiteUser.id)
-      const blackSocket = onlineUsers.get(blackUser.id)
-      if (!whiteSocket || !blackSocket) return
-
-      const roomId = crypto.randomUUID()
-
-      io.sockets.sockets.get(whiteSocket.socketId)?.join(roomId)
-      io.sockets.sockets.get(blackSocket.socketId)?.join(roomId)
-
-      playerRooms.set(whiteUser.id, roomId)
-      playerRooms.set(blackUser.id, roomId)
-
-      activeGames.set(roomId, {
-        black: { socketId: blackSocket.socketId, userId: whiteUser.id },
-        chess: new Chess(),
-        white: { socketId: whiteSocket.socketId, userId: blackUser.id },
-      })
-
-      updateFriendStatus(io, whiteUser.id, "playing")
-      updateFriendStatus(io, blackUser.id, "playing")
-
-      io.to(whiteSocket.socketId).emit("matchmaking:join", {
-        avatar: blackUser.avatar,
-        color: "white",
-        elo: blackUser.stats.elo,
-        username: blackUser.username,
-      })
-
-      io.to(blackSocket.socketId).emit("matchmaking:join", {
-        avatar: whiteUser.avatar,
-        color: "black",
-        elo: whiteUser.stats.elo,
-        username: whiteUser.username,
-      })
-    } catch (err) {
-      console.error(err)
-    }
-  })
+  socket.on("friend:invite-to-game:accept", (friendId: string) => createGame({ blackId: userId, io, whiteId: friendId }))
 
   updateFriendStatus(io, userId, "online")
 }
-
-export default registerFriendEvents
