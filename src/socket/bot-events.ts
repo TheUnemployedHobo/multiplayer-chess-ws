@@ -9,6 +9,12 @@ import { determineGameResult, updateFriendStatus } from "@/lib/utils"
 export default function (io: Server, socket: Socket) {
   const { userId } = socket.data
 
+  const finishBotGame = (payload: unknown) => {
+    socket.emit("bot:finish", payload)
+    updateFriendStatus(io, userId, "online")
+    botGames.delete(userId)
+  }
+
   socket.on("bot:start", (skill: AiLevelsType) => {
     botGames.set(userId, { chess: new Chess(), engine: new Game(), level: skill })
     updateFriendStatus(io, userId, "playing")
@@ -26,34 +32,22 @@ export default function (io: Server, socket: Socket) {
     if (promotion && promotion !== "q") instance.engine.setPiece(to.toUpperCase(), promotion.toUpperCase() as PieceSymbol)
 
     if (instance.chess.isGameOver()) {
-      botGames.delete(userId)
-      updateFriendStatus(io, userId, "online")
-      socket.emit("bot:finished", determineGameResult(instance.chess))
+      finishBotGame(determineGameResult(instance.chess))
       return
     }
 
     const { move } = instance.engine.ai({ level: instance.level, randomness: 0 })
-
     const [entry] = Object.entries(move)
-
     const [botFrom, botTo] = entry!
 
     instance.chess.move({ from: botFrom.toLowerCase(), promotion: "q", to: botTo.toLowerCase() })
 
     socket.emit("bot:move", { from: botFrom.toLowerCase(), to: botTo.toLowerCase() })
 
-    if (instance.chess.isGameOver()) {
-      botGames.delete(userId)
-      updateFriendStatus(io, userId, "online")
-      socket.emit("bot:finished", determineGameResult(instance.chess))
-    }
+    if (instance.chess.isGameOver()) finishBotGame(determineGameResult(instance.chess))
   })
 
-  socket.on("bot:resign", () => {
-    socket.emit("bot:resign", { result: "You resigned", winner: "Black" })
-    updateFriendStatus(io, userId, "online")
-    botGames.delete(userId)
-  })
+  socket.on("bot:resign", () => finishBotGame({ result: "You resigned", winner: "black" }))
 
   socket.on("bot:undo", () => {
     const instance = botGames.get(userId)
