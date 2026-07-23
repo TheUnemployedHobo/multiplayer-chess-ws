@@ -1,15 +1,12 @@
 import type { Server, Socket } from "socket.io"
 
-import { Chess } from "chess.js"
-import db from "prisma/db"
+import { matchmakingQueue } from "@/lib/storage"
+import { createGame } from "@/lib/utils"
 
-import { activeGames, matchmakingQueue, onlineUsers, playerRooms } from "@/lib/storage"
-import { updateFriendStatus } from "@/lib/utils"
-
-const registerMatchEvents = (io: Server, socket: Socket) => {
+export default function registerMatchEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
-  socket.on("matchmaking:join", async () => {
+  socket.on("matchmaking:join", () => {
     if (matchmakingQueue.has(userId)) return
 
     matchmakingQueue.add(userId)
@@ -22,53 +19,7 @@ const registerMatchEvents = (io: Server, socket: Socket) => {
     matchmakingQueue.delete(whiteId)
     matchmakingQueue.delete(blackId)
 
-    const [whiteUser, blackUser] = await db.$transaction([
-      db.user.findUnique({
-        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-        where: { id: whiteId },
-      }),
-      db.user.findUnique({
-        select: { avatar: true, id: true, stats: { select: { elo: true } }, username: true },
-        where: { id: blackId },
-      }),
-    ])
-
-    if (!whiteUser || !blackUser) return
-
-    const whiteSocket = onlineUsers.get(whiteId)
-    const blackSocket = onlineUsers.get(blackId)
-    if (!whiteSocket || !blackSocket) return
-
-    const roomId = crypto.randomUUID()
-
-    io.sockets.sockets.get(whiteSocket.socketId)?.join(roomId)
-    io.sockets.sockets.get(blackSocket.socketId)?.join(roomId)
-
-    playerRooms.set(whiteId, roomId)
-    playerRooms.set(blackId, roomId)
-
-    activeGames.set(roomId, {
-      black: { socketId: blackSocket.socketId, userId: blackId },
-      chess: new Chess(),
-      white: { socketId: whiteSocket.socketId, userId: whiteId },
-    })
-
-    updateFriendStatus(io, whiteId, "playing")
-    updateFriendStatus(io, blackId, "playing")
-
-    io.to(whiteSocket.socketId).emit("matchmaking:join", {
-      avatar: blackUser.avatar,
-      color: "white",
-      elo: blackUser.stats.elo,
-      username: blackUser.username,
-    })
-
-    io.to(blackSocket.socketId).emit("matchmaking:join", {
-      avatar: whiteUser.avatar,
-      color: "black",
-      elo: whiteUser.stats.elo,
-      username: whiteUser.username,
-    })
+    createGame({ blackId, io, whiteId })
   })
 
   socket.on("matchmaking:leave", () => {
@@ -76,5 +27,3 @@ const registerMatchEvents = (io: Server, socket: Socket) => {
     socket.emit("matchmaking:leave", undefined)
   })
 }
-
-export default registerMatchEvents
