@@ -11,7 +11,7 @@ import registerGameEvents from "./game-events"
 import registerMatchEvents from "./match-events"
 import registerUserEvents from "./user-events"
 
-const initiateSocketIO = (io: Server) => {
+export default function initiateSocketIO(io: Server) {
   io.use((socket, next) => {
     try {
       const { jwt } = socket.handshake.auth
@@ -48,5 +48,3 @@ const initiateSocketIO = (io: Server) => {
     })
   })
 }
-
-export default initiateSocketIO
