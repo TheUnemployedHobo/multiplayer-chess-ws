@@ -21,21 +21,6 @@ export function calculateNewElo(userElo: number, opponentElo: number, result: "d
   return Math.round(newElo)
 }
 
-export async function updateFriendStatus(io: Server, userId: string, status: "online" | "playing" | undefined) {
-  try {
-    const friends = await db.friend.findMany({ select: { friendId: true }, where: { userId } })
-
-    friends.forEach(({ friendId }) => {
-      const onlineFriend = onlineUsers.get(friendId)
-      if (onlineFriend) io.to(onlineFriend.socketId).emit("friend:status", { status, userId })
-    })
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-export const sendOnlineCount = (io: Server) => io.emit("users:online-count", onlineUsers.size)
-
 export async function createGame({ blackId, io, whiteId }: { blackId: string; io: Server; whiteId: string }) {
   try {
     const [whiteUser, blackUser] = await db.$transaction([
@@ -97,4 +82,17 @@ export function determineGameResult(chess: Chess) {
   if (chess.isDrawByFiftyMoves()) return { result: "50 move rule", winner: null }
 
   return null
+}
+
+export async function updateFriendStatus(io: Server, userId: string, status: "online" | "playing" | undefined) {
+  try {
+    const friends = await db.friend.findMany({ select: { friendId: true }, where: { userId } })
+
+    friends.forEach(({ friendId }) => {
+      const onlineFriend = onlineUsers.get(friendId)
+      if (onlineFriend) io.to(onlineFriend.socketId).emit("friend:status", { status, userId })
+    })
+  } catch (err) {
+    console.error(err)
+  }
 }
