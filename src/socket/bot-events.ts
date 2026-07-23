@@ -6,7 +6,7 @@ import { Game } from "js-chess-engine"
 import { type AiLevelsType, botGames } from "@/lib/storage"
 import { determineGameResult, updateFriendStatus } from "@/lib/utils"
 
-const registerBotEvents = (io: Server, socket: Socket) => {
+export default function (io: Server, socket: Socket) {
   const { userId } = socket.data
 
   socket.on("bot:start", (skill: AiLevelsType) => {
@@ -71,5 +71,3 @@ const registerBotEvents = (io: Server, socket: Socket) => {
     socket.emit("bot:undo", undefined)
   })
 }
-
-export default registerBotEvents
