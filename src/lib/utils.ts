@@ -75,7 +75,7 @@ export async function createGame({ blackId, io, whiteId }: { blackId: string; io
 }
 
 export function determineGameResult(chess: Chess) {
-  if (chess.isCheckmate()) return { result: "Checkmate", winner: chess.turn() === "w" ? "Black" : "White" }
+  if (chess.isCheckmate()) return { result: "Checkmate", winner: chess.turn() === "w" ? "black" : "white" }
   if (chess.isStalemate()) return { result: "Stalemate", winner: null }
   if (chess.isInsufficientMaterial()) return { result: "Insufficient material", winner: null }
   if (chess.isThreefoldRepetition()) return { result: "Three fold repetition", winner: null }
