@@ -1,16 +1,13 @@
 import type { Server, Socket } from "socket.io"
 
-import { activeGames, playerRooms } from "@/lib/storage"
+import { activeGames, getActiveGamesByUserId, playerRooms } from "@/lib/storage"
 import { determineGameResult, updateFriendStatus } from "@/lib/utils"
 
-const registerGameEvents = (io: Server, socket: Socket) => {
+export default function registerGameEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
   socket.on("game:move", ({ from, promotion, to }: { from: string; promotion: string; to: string }) => {
-    const roomId = playerRooms.get(userId)
-    if (!roomId) return
-
-    const game = activeGames.get(roomId)
+    const game = getActiveGamesByUserId(userId)
     if (!game) return
 
     const color = game.chess.turn()
@@ -21,46 +18,40 @@ const registerGameEvents = (io: Server, socket: Socket) => {
     const move = game.chess.move({ from, promotion, to })
     if (!move) return
 
-    socket.to(roomId).emit("game:move", { from: move.from, promotion: move.promotion, to: move.to })
+    socket.to(game.roomId).emit("game:move", { from: move.from, promotion: move.promotion, to: move.to })
 
     const result = determineGameResult(game.chess)
     if (!result) return
 
-    activeGames.delete(roomId)
+    activeGames.delete(game.roomId)
     playerRooms.delete(game.white.userId)
     playerRooms.delete(game.black.userId)
 
     updateFriendStatus(io, game.white.userId, "online")
     updateFriendStatus(io, game.black.userId, "online")
 
-    io.to(roomId).emit("game:finished", result)
+    io.to(game.roomId).emit("game:finished", result)
   })
 
   socket.on("game:resign", () => {
-    const roomId = playerRooms.get(userId)
-    if (!roomId) return
-
-    const game = activeGames.get(roomId)
+    const game = getActiveGamesByUserId(userId)
     if (!game) return
 
     const resignedColor = game.white.userId === userId ? "White" : "Black"
     const winner = resignedColor === "White" ? "Black" : "White"
 
-    activeGames.delete(roomId)
+    activeGames.delete(game.roomId)
     playerRooms.delete(game.white.userId)
     playerRooms.delete(game.black.userId)
 
     updateFriendStatus(io, game.white.userId, "online")
     updateFriendStatus(io, game.black.userId, "online")
 
-    io.to(roomId).emit("game:resign", { result: `${resignedColor} resigned`, winner })
+    io.to(game.roomId).emit("game:resign", { result: `${resignedColor} resigned`, winner })
   })
 
   socket.on("game:draw-offer", () => {
-    const roomId = playerRooms.get(userId)
-    if (!roomId) return
-
-    const game = activeGames.get(roomId)
+    const game = getActiveGamesByUserId(userId)
     if (!game) return
 
     const offerorColor = game.white.userId === userId ? "white" : "black"
@@ -71,10 +62,7 @@ const registerGameEvents = (io: Server, socket: Socket) => {
   })
 
   socket.on("game:draw-offer:decline", () => {
-    const roomId = playerRooms.get(userId)
-    if (!roomId) return
-
-    const game = activeGames.get(roomId)
+    const game = getActiveGamesByUserId(userId)
     if (!game) return
 
     const declinerColor = game.white.userId === userId ? "white" : "black"
@@ -85,16 +73,13 @@ const registerGameEvents = (io: Server, socket: Socket) => {
   })
 
   socket.on("game:draw-offer:accept", () => {
-    const roomId = playerRooms.get(userId)
-    if (!roomId) return
-
-    const game = activeGames.get(roomId)
+    const game = getActiveGamesByUserId(userId)
     if (!game) return
 
     const acceptorColor = game.white.userId === userId ? "white" : "black"
     const offerorColor = acceptorColor === "white" ? "black" : "white"
 
-    activeGames.delete(roomId)
+    activeGames.delete(game.roomId)
     playerRooms.delete(game.white.userId)
     playerRooms.delete(game.black.userId)
 
@@ -105,5 +90,3 @@ const registerGameEvents = (io: Server, socket: Socket) => {
     socket.to(game[offerorColor].socketId).emit("game:draw-offer:accept", undefined)
   })
 }
-
-export default registerGameEvents
