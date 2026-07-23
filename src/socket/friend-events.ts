@@ -5,46 +5,42 @@ import db from "prisma/db"
 import { onlineUsers } from "@/lib/storage"
 import { createGame, updateFriendStatus } from "@/lib/utils"
 
-type InvitePayloadType = { invitee: { id: string; username: string }; inviter: { avatar: string; username: string } }
+type FriendEventPayload = { partyA: { avatar: string; username: string }; partyB: { id: string; username: string } }
 
 export default function registerFriendEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
-  socket.on("friend:incoming-request", ({ friendId, ...senderInfo }) => {
-    const friend = onlineUsers.get(friendId)
-    const payload = { ...senderInfo, userId }
+  socket.on("friend:request", ({ partyA, partyB }: FriendEventPayload) => {
+    const friend = onlineUsers.get(partyB.id)
+    if (!friend) return
 
-    if (friend) io.to(friend.socketId).emit("friend:incoming-request", payload)
+    io.to(friend.socketId).emit("friend:request", { ...partyA, description: "Wants to be your friend", id: userId })
   })
 
-  socket.on("friend:accept-request", async (friendId) => {
+  socket.on("friend:request:accept", async (friendId: string) => {
     try {
       const [{ user: me }, { user: them }] = await db.$transaction([
-        db.friend.create({ data: { friendId: friendId, userId: userId }, select: { user: { select: { username: true } } } }),
-        db.friend.create({ data: { friendId: userId, userId: friendId }, select: { user: { select: { username: true } } } }),
+        db.friend.create({ data: { friendId: friendId, userId: userId }, select: { user: true } }),
+        db.friend.create({ data: { friendId: userId, userId: friendId }, select: { user: true } }),
       ])
 
-      socket.emit("friend:accept-request", `You and ${them.username} are now friends`)
+      socket.emit("friend:request:accept", `You and ${them.username} are now friends`)
 
       const friend = onlineUsers.get(friendId)
-      if (friend) io.to(friend.socketId).emit("friend:accept-request", `You and ${me.username} are now friends`)
+      if (friend) io.to(friend.socketId).emit("friend:request:accept", `You and ${me.username} are now friends`)
     } catch (err) {
       console.error(err)
     }
   })
 
-  socket.on("friend:unfriend", async (friendId) => {
+  socket.on("friend:unfriend", async (friendId: string) => {
     try {
-      await db.friend.deleteMany({
-        where: {
-          OR: [
-            { friendId: friendId, userId: userId },
-            { friendId: userId, userId: friendId },
-          ],
-        },
-      })
+      const [{ friend: friendInfo }] = await db.$transaction([
+        db.friend.delete({ select: { friend: true }, where: { userId_friendId: { friendId, userId } } }),
+        db.friend.delete({ where: { userId_friendId: { friendId: userId, userId: friendId } } }),
+      ])
 
-      socket.emit("friend:unfriend", undefined)
+      socket.emit("friend:unfriend", `You're no longer friends with ${friendInfo.username}`)
 
       const friend = onlineUsers.get(friendId)
       if (friend) io.to(friend.socketId).emit("friend:unfriend", undefined)
@@ -53,17 +49,15 @@ export default function registerFriendEvents(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("friend:invite-to-game", ({ invitee, inviter }: InvitePayloadType) => {
-    const friend = onlineUsers.get(invitee.id)
+  socket.on("friend:invite", ({ partyA, partyB }: FriendEventPayload) => {
+    const friend = onlineUsers.get(partyB.id)
     if (!friend || friend.status !== "online") return
 
-    const description = "Wants to play"
-
-    socket.emit("friend:invite-to-game", { payload: `Invite sent to ${invitee.username}`, role: "inviter" })
-    io.to(friend.socketId).emit("friend:invite-to-game", { payload: { ...inviter, description, id: userId }, role: "invitee" })
+    socket.emit("friend:invite", { payload: `Invite sent to ${partyB.username}`, role: "inviter" })
+    io.to(friend.socketId).emit("friend:invite", { payload: { ...partyA, description: "Wants to play", id: userId }, role: "invitee" })
   })
 
-  socket.on("friend:invite-to-game:accept", (friendId: string) => createGame({ blackId: userId, io, whiteId: friendId }))
+  socket.on("friend:invite:accept", (friendId: string) => createGame({ blackId: userId, io, whiteId: friendId }))
 
   updateFriendStatus(io, userId, "online")
 }
