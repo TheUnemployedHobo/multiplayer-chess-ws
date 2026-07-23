@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express"
+import type { Socket } from "socket.io"
 
 import { UnauthenticatedError } from "express-error-toolkit"
 import { type ValidationChain, validationResult } from "express-validator"
@@ -24,4 +25,18 @@ export const validateJwt: RequestHandler = (req, _, next) => {
   req.body = { ...req.body, userId }
 
   next()
+}
+
+export const validateSocketJwt = (socket: Socket, next: (err?: Error) => void) => {
+  try {
+    const { jwt } = socket.handshake.auth
+    if (!jwt) return next(new Error("Unauthorized"))
+
+    const { userId } = jwtHelper.verify(jwt)
+    socket.data.userId = userId
+
+    next()
+  } catch {
+    next(new Error("Unauthorized"))
+  }
 }
