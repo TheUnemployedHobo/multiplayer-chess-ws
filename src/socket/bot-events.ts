@@ -47,8 +47,6 @@ export default function (io: Server, socket: Socket) {
     if (instance.chess.isGameOver()) finishBotGame(determineGameResult(instance.chess))
   })
 
-  socket.on("bot:resign", () => finishBotGame({ result: "You resigned", winner: "black" }))
-
   socket.on("bot:undo", () => {
     const instance = botGames.get(userId)
     if (!instance) return
@@ -64,4 +62,6 @@ export default function (io: Server, socket: Socket) {
 
     socket.emit("bot:undo", undefined)
   })
+
+  socket.on("bot:resign", () => finishBotGame({ result: "You resigned", winner: "black" }))
 }
