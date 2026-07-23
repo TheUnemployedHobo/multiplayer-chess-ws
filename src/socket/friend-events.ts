@@ -12,9 +12,7 @@ export default function registerFriendEvents(io: Server, socket: Socket) {
 
   socket.on("friend:request", ({ partyA, partyB }: FriendEventPayload) => {
     const friend = onlineUsers.get(partyB.id)
-    if (!friend) return
-
-    io.to(friend.socketId).emit("friend:request", { ...partyA, id: userId, message: "Wants to be your friend" })
+    if (friend) io.to(friend.socketId).emit("friend:request", { ...partyA, id: userId, message: "Wants to be your friend" })
   })
 
   socket.on("friend:request:accept", async (friendId: string) => {
