@@ -6,14 +6,20 @@ import { determineGameResult, updateFriendStatus } from "@/lib/utils"
 export default function registerGameEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
+  const finishGame = ({ blackId, roomId, whiteId }: { blackId: string; roomId: string; whiteId: string }) => {
+    activeGames.delete(roomId)
+    playerRooms.delete(whiteId)
+    playerRooms.delete(blackId)
+    updateFriendStatus(io, whiteId, "online")
+    updateFriendStatus(io, blackId, "online")
+  }
+
   socket.on("game:move", ({ from, promotion, to }: { from: string; promotion: string; to: string }) => {
     const game = getActiveGamesByUserId(userId)
     if (!game) return
 
-    const color = game.chess.turn()
-
-    if (color === "w" && game.white.userId !== userId) return
-    if (color === "b" && game.black.userId !== userId) return
+    if (game.chess.turn() === "w" && game.white.userId !== userId) return
+    if (game.chess.turn() === "b" && game.black.userId !== userId) return
 
     const move = game.chess.move({ from, promotion, to })
     if (!move) return
@@ -23,31 +29,21 @@ export default function registerGameEvents(io: Server, socket: Socket) {
     const result = determineGameResult(game.chess)
     if (!result) return
 
-    activeGames.delete(game.roomId)
-    playerRooms.delete(game.white.userId)
-    playerRooms.delete(game.black.userId)
+    finishGame({ blackId: game.black.userId, roomId: game.roomId, whiteId: game.white.userId })
 
-    updateFriendStatus(io, game.white.userId, "online")
-    updateFriendStatus(io, game.black.userId, "online")
-
-    io.to(game.roomId).emit("game:finished", result)
+    io.to(game.roomId).emit("game:finish", result)
   })
 
   socket.on("game:resign", () => {
     const game = getActiveGamesByUserId(userId)
     if (!game) return
 
-    const resignedColor = game.white.userId === userId ? "White" : "Black"
-    const winner = resignedColor === "White" ? "Black" : "White"
+    const resignedColor = game.white.userId === userId ? "white" : "black"
+    const winner = resignedColor === "white" ? "black" : "white"
 
-    activeGames.delete(game.roomId)
-    playerRooms.delete(game.white.userId)
-    playerRooms.delete(game.black.userId)
+    finishGame({ blackId: game.black.userId, roomId: game.roomId, whiteId: game.white.userId })
 
-    updateFriendStatus(io, game.white.userId, "online")
-    updateFriendStatus(io, game.black.userId, "online")
-
-    io.to(game.roomId).emit("game:resign", { result: `${resignedColor} resigned`, winner })
+    io.to(game.roomId).emit("game:finish", { result: `${resignedColor} resigned`, winner })
   })
 
   socket.on("game:draw-offer", () => {
@@ -57,8 +53,8 @@ export default function registerGameEvents(io: Server, socket: Socket) {
     const offerorColor = game.white.userId === userId ? "white" : "black"
     const offereeColor = offerorColor === "white" ? "black" : "white"
 
-    socket.emit("game:draw-offer", { message: `Draw offer sent to ${offereeColor}`, offerRole: "offeror" })
-    socket.to(game[offereeColor].socketId).emit("game:draw-offer", { message: `${offerorColor} offered a draw`, offerRole: "offeree" })
+    socket.emit("game:draw-offer", { message: `Draw offer sent to ${offereeColor}`, role: "offeror" })
+    socket.to(game[offereeColor].socketId).emit("game:draw-offer", { message: `${offerorColor} offered a draw`, role: "offeree" })
   })
 
   socket.on("game:draw-offer:decline", () => {
@@ -79,12 +75,7 @@ export default function registerGameEvents(io: Server, socket: Socket) {
     const acceptorColor = game.white.userId === userId ? "white" : "black"
     const offerorColor = acceptorColor === "white" ? "black" : "white"
 
-    activeGames.delete(game.roomId)
-    playerRooms.delete(game.white.userId)
-    playerRooms.delete(game.black.userId)
-
-    updateFriendStatus(io, game.white.userId, "online")
-    updateFriendStatus(io, game.black.userId, "online")
+    finishGame({ blackId: game.black.userId, roomId: game.roomId, whiteId: game.white.userId })
 
     socket.emit("game:draw-offer:accept", undefined)
     socket.to(game[offerorColor].socketId).emit("game:draw-offer:accept", undefined)
