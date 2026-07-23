@@ -10,3 +10,13 @@ export const botGames = new Map<string, { chess: Chess; engine: Game; level: AiL
 export const activeGames = new Map<string, { black: UserIds; chess: Chess; white: UserIds }>()
 export const playerRooms = new Map<string, string>()
 export const matchmakingQueue = new Set<string>()
+
+export const getActiveGamesByUserId = (userId: string) => {
+  const roomId = playerRooms.get(userId)
+  if (!roomId) return null
+
+  const game = activeGames.get(roomId)
+  if (!game) return null
+
+  return { roomId, ...game }
+}
