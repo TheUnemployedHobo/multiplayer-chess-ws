@@ -14,13 +14,6 @@ export const jwtHelper = {
   verify: (token: string) => jwt.verify(token, JWT_SECRET) as { exp: number; iat: number; userId: number },
 }
 
-export function calculateNewElo(userElo: number, opponentElo: number, result: "draw" | "loss" | "win", k = 32) {
-  const expectedScore = 1 / (1 + Math.pow(10, (opponentElo - userElo) / 400))
-  const newElo = userElo + k * ({ draw: 0.5, loss: 0, win: 1 }[result] - expectedScore)
-
-  return Math.round(newElo)
-}
-
 export async function createGame({ blackId, io, whiteId }: { blackId: string; io: Server; whiteId: string }) {
   try {
     const [whiteUser, blackUser] = await db.$transaction([
@@ -82,6 +75,24 @@ export function determineGameResult(chess: Chess) {
   if (chess.isDrawByFiftyMoves()) return { result: "50 move rule", winner: null }
 
   return null
+}
+
+export async function recordMatchAndUpdateStats(userId: string, opponentId: string, result: "draw" | "loss" | "win") {
+  try {
+    await db.$transaction(async (tx) => {
+      const { opponent, user } = await tx.match.create({ data: { opponentId, result, userId }, select: { opponent: true, user: true } })
+      const expectedScore = 1 / (1 + Math.pow(10, (opponent.stats.elo - user.stats.elo) / 400))
+      const newStats = {
+        elo: Math.round(user.stats.elo + 32 * ({ draw: 0.5, loss: 0, win: 1 }[result] - expectedScore)),
+        games: user.stats.games + 1,
+        losses: user.stats.losses + Number(result === "loss"),
+        wins: user.stats.wins + Number(result === "win"),
+      }
+      await tx.user.update({ data: { stats: newStats }, where: { id: userId } })
+    })
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 export async function updateFriendStatus(io: Server, userId: string, status: "online" | "playing" | undefined) {
