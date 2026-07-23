@@ -5,12 +5,12 @@ import db from "prisma/db"
 import { onlineUsers } from "@/lib/storage"
 import { createGame, updateFriendStatus } from "@/lib/utils"
 
-type FriendEventPayload = { partyA: { avatar: string; username: string }; partyB: { id: string; username: string } }
+type FriendEventPayloadType = { partyA: { avatar: string; username: string }; partyB: { id: string; username: string } }
 
 export default function registerFriendEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
-  socket.on("friend:request", ({ partyA, partyB }: FriendEventPayload) => {
+  socket.on("friend:request", ({ partyA, partyB }: FriendEventPayloadType) => {
     const friend = onlineUsers.get(partyB.id)
     if (friend) io.to(friend.socketId).emit("friend:request", { ...partyA, id: userId, message: "Wants to be your friend" })
   })
@@ -47,7 +47,7 @@ export default function registerFriendEvents(io: Server, socket: Socket) {
     }
   })
 
-  socket.on("friend:invite", ({ partyA, partyB }: FriendEventPayload) => {
+  socket.on("friend:invite", ({ partyA, partyB }: FriendEventPayloadType) => {
     const friend = onlineUsers.get(partyB.id)
     if (!friend || friend.status !== "online") return
 
