@@ -14,7 +14,7 @@ export default function registerFriendEvents(io: Server, socket: Socket) {
     const friend = onlineUsers.get(partyB.id)
     if (!friend) return
 
-    io.to(friend.socketId).emit("friend:request", { ...partyA, description: "Wants to be your friend", id: userId })
+    io.to(friend.socketId).emit("friend:request", { ...partyA, id: userId, message: "Wants to be your friend" })
   })
 
   socket.on("friend:request:accept", async (friendId: string) => {
@@ -54,7 +54,7 @@ export default function registerFriendEvents(io: Server, socket: Socket) {
     if (!friend || friend.status !== "online") return
 
     socket.emit("friend:invite", { payload: `Invite sent to ${partyB.username}`, role: "inviter" })
-    io.to(friend.socketId).emit("friend:invite", { payload: { ...partyA, description: "Wants to play", id: userId }, role: "invitee" })
+    io.to(friend.socketId).emit("friend:invite", { payload: { ...partyA, id: userId, message: "Wants to play" }, role: "invitee" })
   })
 
   socket.on("friend:invite:accept", (friendId: string) => createGame({ blackId: userId, io, whiteId: friendId }))
