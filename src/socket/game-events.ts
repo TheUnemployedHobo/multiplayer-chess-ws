@@ -1,19 +1,17 @@
 import type { Server, Socket } from "socket.io"
 
-import { activeGames, getActiveGamesByUserId, playerRooms } from "@/lib/storage"
+import { getActiveGamesByUserId, removeActiveGame } from "@/lib/storage"
 import { determineGameResult, recordMatchAndUpdateStats, updateFriendStatus } from "@/lib/utils"
 
 export default function registerGameEvents(io: Server, socket: Socket) {
   const { userId } = socket.data
 
   const finishGame = (game: { blackId: string; roomId: string; whiteId: string; winner: null | string }) => {
-    activeGames.delete(game.roomId)
-    playerRooms.delete(game.whiteId)
-    playerRooms.delete(game.blackId)
-    updateFriendStatus(io, game.whiteId, "online")
-    updateFriendStatus(io, game.blackId, "online")
     recordMatchAndUpdateStats(game.whiteId, game.blackId, game.winner === "white" ? "win" : game.winner === "black" ? "loss" : "draw")
     recordMatchAndUpdateStats(game.blackId, game.whiteId, game.winner === "black" ? "win" : game.winner === "white" ? "loss" : "draw")
+    removeActiveGame({ blackId: game.blackId, roomId: game.roomId, whiteId: game.whiteId })
+    updateFriendStatus(io, game.whiteId, "online")
+    updateFriendStatus(io, game.blackId, "online")
   }
 
   socket.on("game:move", ({ from, promotion, to }: { from: string; promotion: string; to: string }) => {
