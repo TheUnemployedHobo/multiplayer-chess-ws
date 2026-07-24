@@ -20,3 +20,9 @@ export const getActiveGamesByUserId = (userId: string) => {
 
   return { roomId, ...game }
 }
+
+export const removeActiveGame = (game: { blackId: string; roomId: string; whiteId: string }) => {
+  activeGames.delete(game.roomId)
+  playerRooms.delete(game.whiteId)
+  playerRooms.delete(game.blackId)
+}
