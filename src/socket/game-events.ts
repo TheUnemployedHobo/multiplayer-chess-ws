@@ -79,7 +79,9 @@ export default function registerGameEvents(io: Server, socket: Socket) {
 
     finishGame({ blackId: game.black.userId, roomId: game.roomId, whiteId: game.white.userId, winner: null })
 
-    socket.emit("game:draw-offer:accept", undefined)
-    socket.to(game[offerorColor].socketId).emit("game:draw-offer:accept", undefined)
+    const payload = { result: "Both players agreed to a draw", winner: null }
+
+    socket.emit("game:finish", payload)
+    socket.to(game[offerorColor].socketId).emit("game:finish", payload)
   })
 }
