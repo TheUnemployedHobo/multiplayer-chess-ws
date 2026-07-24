@@ -15,6 +15,7 @@ export const matchGet: RequestHandler = async (req, res) => {
     where: { userId },
     ...(!Number(take) ? {} : { take: Math.trunc(Number(take)) }),
     ...(!Number(skip) ? {} : { skip: Math.trunc(Number(skip)) }),
+    orderBy: { playedAt: "desc" },
   })
 
   res.json(foundMatches)
